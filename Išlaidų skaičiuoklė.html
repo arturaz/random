@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Išlaidų Paskirstymo Skaičiuoklė</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: auto;
+        }
+        h1, h2, h3 {
+            color: #333;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            width: 100%;
+            margin-top: 10px; /* Added margin for spacing */
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        #results table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 20px; /* Added margin for spacing between tables */
+        }
+        #results th, #results td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #results th {
+            background-color: #f0f0f0;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .assumptions {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #555;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        .assumptions ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Išlaidų Paskirstymo Skaičiuoklė</h1>
+
+        <div class="input-group">
+            <label for="totalExpense">Bendra išlaidų suma (€):</label>
+            <input type="number" id="totalExpense" placeholder="Įveskite bendrą sumą" min="0" step="0.01">
+        </div>
+
+        <div class="input-group">
+            <label for="numberOfMonths">Mokėjimo laikotarpis (mėnesiais):</label>
+            <input type="number" id="numberOfMonths" value="1" min="1" step="1">
+        </div>
+
+        <button onclick="calculateShares()">Skaičiuoti</button>
+
+        <div id="results">
+            <!-- Rezultatai bus įterpti čia -->
+        </div>
+
+        <div class="assumptions">
+            <h3>Skaičiavimo prielaidos:</h3>
+            <p>Skaičiavimai atliekami remiantis šiais butų plotais ir kiekiais:</p>
+            <ul>
+                <li>2 kambarių butai: 4 vnt./korpuse, vid. plotas 55.5 m² (iš 55-56 m²)</li>
+                <li>3 kambarių butai: 6 vnt./korpuse, vid. plotas 73.5 m² (iš 72-75 m²)</li>
+                <li>4 kambarių butai: 6 vnt./korpuse, vid. plotas 76.5 m² (iš 75-78 m²)</li>
+                <li>102 m² butas: 1 vnt. (viename iš 4 korpusų)</li>
+            </ul>
+            <p>Viso korpusų: 4.</p>
+            <p><strong>Bendras visų butų plotas skaičiavimams: <span id="totalAreaDisplay">4590.00</span> m²</strong></p>
+        </div>
+    </div>
+
+    <script>
+        const apartmentTypesData = [
+            {
+                name: "2 kambarių butas",
+                avgArea: 55.5, // (55+56)/2
+                unitsPerBuilding: 4
+            },
+            {
+                name: "3 kambarių butas",
+                avgArea: 73.5, // (72+75)/2
+                unitsPerBuilding: 6
+            },
+            {
+                name: "4 kambarių butas",
+                avgArea: 76.5, // (75+78)/2
+                unitsPerBuilding: 6
+            }
+        ];
+
+        const specialApartment = {
+            name: "102 m² butas",
+            area: 102,
+            totalUnits: 1 // Tik vienas toks butas visuose korpusuose
+        };
+
+        const totalBuildings = 4;
+
+        // Iš anksto apskaičiuojame bendrą plotą
+        let overallTotalArea = 0;
+        apartmentTypesData.forEach(type => {
+            overallTotalArea += type.avgArea * type.unitsPerBuilding * totalBuildings;
+        });
+        overallTotalArea += specialApartment.area * specialApartment.totalUnits;
+
+        document.getElementById('totalAreaDisplay').textContent = overallTotalArea.toFixed(2);
+
+        function calculateShares() {
+            const totalExpenseInput = document.getElementById('totalExpense');
+            const numberOfMonthsInput = document.getElementById('numberOfMonths');
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = ''; // Išvalome ankstesnius rezultatus
+
+            const totalExpense = parseFloat(totalExpenseInput.value);
+            const numberOfMonths = parseInt(numberOfMonthsInput.value);
+
+            if (isNaN(totalExpense) || totalExpense < 0) {
+                resultsDiv.innerHTML = '<p class="error">Įveskite teisingą išlaidų sumą (teigiamą skaičių).</p>';
+                return;
+            }
+
+            if (isNaN(numberOfMonths) || numberOfMonths < 1) {
+                resultsDiv.innerHTML = '<p class="error">Įveskite teisingą mėnesių skaičių (teigiamą sveikąjį skaičių, mažiausiai 1).</p>';
+                return;
+            }
+
+            if (overallTotalArea === 0) {
+                resultsDiv.innerHTML = '<p class="error">Klaida: bendras plotas yra 0. Patikrinkite butų duomenis.</p>';
+                return;
+            }
+
+            const monthlyTotalExpense = totalExpense / numberOfMonths;
+            const costPerSqmPerMonth = monthlyTotalExpense / overallTotalArea;
+
+            let resultsHTML = '';
+
+            const paymentPeriodText = numberOfMonths > 1 ? ` per mėnesį (mokant ${numberOfMonths} mėn.)` : '';
+            const paymentPeriodHeader = numberOfMonths > 1 ? ' per mėn.' : '';
+
+            resultsHTML += `<h2>Mokėjimai vienam butui${paymentPeriodText}:</h2>`;
+            resultsHTML += '<table>';
+            resultsHTML += `<tr><th>Buto tipas</th><th>Plotas (vid.)</th><th>Mokestis${paymentPeriodHeader} (€)</th></tr>`;
+
+            apartmentTypesData.forEach(type => {
+                const costForThisTypePerMonth = type.avgArea * costPerSqmPerMonth;
+                resultsHTML += `<tr>
+                                  <td>${type.name}</td>
+                                  <td>${type.avgArea.toFixed(2)} m²</td>
+                                  <td>${costForThisTypePerMonth.toFixed(2)} €</td>
+                               </tr>`;
+            });
+
+            const costForSpecialApartmentPerMonth = specialApartment.area * costPerSqmPerMonth;
+            resultsHTML += `<tr>
+                              <td>${specialApartment.name}</td>
+                              <td>${specialApartment.area.toFixed(2)} m²</td>
+                              <td>${costForSpecialApartmentPerMonth.toFixed(2)} €</td>
+                           </tr>`;
+            resultsHTML += '</table>';
+
+            resultsHTML += `<p style="margin-top:5px;"><strong>Kaina už 1 m²${paymentPeriodHeader}: ${costPerSqmPerMonth.toFixed(4)} €</strong></p>`;
+
+            if (numberOfMonths > 1) {
+                resultsHTML += `<h3 style="margin-top: 30px;">Bendra mokėjimų suma vienam butui per ${numberOfMonths} mėn.:</h3>`;
+                resultsHTML += '<table>';
+                resultsHTML += `<tr><th>Buto tipas</th><th>Bendra suma per ${numberOfMonths} mėn. (€)</th></tr>`;
+
+                apartmentTypesData.forEach(type => {
+                    const totalCostForThisType = type.avgArea * costPerSqmPerMonth * numberOfMonths;
+                    resultsHTML += `<tr>
+                                      <td>${type.name}</td>
+                                      <td>${totalCostForThisType.toFixed(2)} €</td>
+                                   </tr>`;
+                });
+
+                const totalCostForSpecialApartment = specialApartment.area * costPerSqmPerMonth * numberOfMonths;
+                resultsHTML += `<tr>
+                                  <td>${specialApartment.name}</td>
+                                  <td>${totalCostForSpecialApartment.toFixed(2)} €</td>
+                               </tr>`;
+                resultsHTML += '</table>';
+            }
+
+
+            resultsDiv.innerHTML = resultsHTML;
+        }
+    </script>
+</body>
+</html>
