@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="lt">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,23 +12,29 @@
             background-color: #f4f4f4;
             color: #333;
         }
+
         .container {
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             max-width: 600px;
             margin: auto;
         }
-        h1, h2, h3 {
+
+        h1,
+        h2,
+        h3 {
             color: #333;
             text-align: center;
         }
+
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
         }
+
         input[type="number"] {
             width: calc(100% - 22px);
             padding: 10px;
@@ -36,6 +43,7 @@
             border-radius: 4px;
             box-sizing: border-box;
         }
+
         button {
             background-color: #007bff;
             color: white;
@@ -46,33 +54,41 @@
             font-size: 16px;
             display: block;
             width: 100%;
-            margin-top: 10px; /* Added margin for spacing */
+            margin-top: 10px;
         }
+
         button:hover {
             background-color: #0056b3;
         }
+
         #results {
             margin-top: 20px;
         }
+
         #results table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
-            margin-bottom: 20px; /* Added margin for spacing between tables */
+            margin-bottom: 20px;
         }
-        #results th, #results td {
+
+        #results th,
+        #results td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
         }
+
         #results th {
             background-color: #f0f0f0;
         }
+
         .error {
             color: red;
             font-weight: bold;
             margin-top: 10px;
         }
+
         .assumptions {
             margin-top: 30px;
             font-size: 0.9em;
@@ -80,15 +96,18 @@
             border-top: 1px solid #eee;
             padding-top: 15px;
         }
+
         .assumptions ul {
             list-style-type: disc;
             padding-left: 20px;
         }
+
         .input-group {
             margin-bottom: 15px;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Išlaidų Paskirstymo Skaičiuoklė</h1>
@@ -111,15 +130,17 @@
 
         <div class="assumptions">
             <h3>Skaičiavimo prielaidos:</h3>
-            <p>Skaičiavimai atliekami remiantis šiais butų plotais ir kiekiais:</p>
+            <p>Individualių butų plotai (naudojami proporcijoms skaičiuoti):</p>
             <ul>
-                <li>2 kambarių butai: 4 vnt./korpuse, vid. plotas 55.5 m² (iš 55-56 m²)</li>
-                <li>3 kambarių butai: 6 vnt./korpuse, vid. plotas 73.5 m² (iš 72-75 m²)</li>
-                <li>4 kambarių butai: 6 vnt./korpuse, vid. plotas 76.5 m² (iš 75-78 m²)</li>
-                <li>102 m² butas: 1 vnt. (viename iš 4 korpusų)</li>
+                <li>2 kambarių butai: vid. plotas 55.5 m²</li>
+                <li>3 kambarių butai: vid. plotas 73.5 m²</li>
+                <li>4 kambarių butai: vid. plotas 76.5 m²</li>
+                <li>102 m² butas: plotas 102 m²</li>
             </ul>
-            <p>Viso korpusų: 4.</p>
-            <p><strong>Bendras visų butų plotas skaičiavimams: <span id="totalAreaDisplay">4590.00</span> m²</strong></p>
+            <p><strong>Bendras naudingasis plotas, naudojamas išlaidoms paskirstyti: <span
+                        id="totalAreaDisplay">4826.41</span> m²</strong></p>
+            <p>Viso korpusų: 4. Kiekviename korpuse yra po 4 vnt. 2 kamb., 6 vnt. 3 kamb., 6 vnt. 4 kamb. butų. Vienas
+                korpusas papildomai turi 102m² butą.</p>
         </div>
     </div>
 
@@ -128,6 +149,7 @@
             {
                 name: "2 kambarių butas",
                 avgArea: 55.5, // (55+56)/2
+                // Kiekis nebebus naudojamas bendram plotui skaičiuoti, bet gali būti naudingas ateityje
                 unitsPerBuilding: 4
             },
             {
@@ -145,17 +167,11 @@
         const specialApartment = {
             name: "102 m² butas",
             area: 102,
-            totalUnits: 1 // Tik vienas toks butas visuose korpusuose
+            totalUnits: 1
         };
 
-        const totalBuildings = 4;
-
-        // Iš anksto apskaičiuojame bendrą plotą
-        let overallTotalArea = 0;
-        apartmentTypesData.forEach(type => {
-            overallTotalArea += type.avgArea * type.unitsPerBuilding * totalBuildings;
-        });
-        overallTotalArea += specialApartment.area * specialApartment.totalUnits;
+        // Naudojamas pateiktas bendras naudingasis plotas
+        const overallTotalArea = 4826.41;
 
         document.getElementById('totalAreaDisplay').textContent = overallTotalArea.toFixed(2);
 
@@ -163,7 +179,7 @@
             const totalExpenseInput = document.getElementById('totalExpense');
             const numberOfMonthsInput = document.getElementById('numberOfMonths');
             const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = ''; // Išvalome ankstesnius rezultatus
+            resultsDiv.innerHTML = '';
 
             const totalExpense = parseFloat(totalExpenseInput.value);
             const numberOfMonths = parseInt(numberOfMonthsInput.value);
@@ -179,11 +195,12 @@
             }
 
             if (overallTotalArea === 0) {
-                resultsDiv.innerHTML = '<p class="error">Klaida: bendras plotas yra 0. Patikrinkite butų duomenis.</p>';
+                resultsDiv.innerHTML = '<p class="error">Klaida: bendras naudingasis plotas yra 0. Patikrinkite duomenis.</p>';
                 return;
             }
 
             const monthlyTotalExpense = totalExpense / numberOfMonths;
+            // Kaina už m² skaičiuojama naudojant patikslintą bendrą plotą
             const costPerSqmPerMonth = monthlyTotalExpense / overallTotalArea;
 
             let resultsHTML = '';
@@ -193,7 +210,7 @@
 
             resultsHTML += `<h2>Mokėjimai vienam butui${paymentPeriodText}:</h2>`;
             resultsHTML += '<table>';
-            resultsHTML += `<tr><th>Buto tipas</th><th>Plotas (vid.)</th><th>Mokestis${paymentPeriodHeader} (€)</th></tr>`;
+            resultsHTML += `<tr><th>Buto tipas</th><th>Plotas (vid./spec.)</th><th>Mokestis${paymentPeriodHeader} (€)</th></tr>`;
 
             apartmentTypesData.forEach(type => {
                 const costForThisTypePerMonth = type.avgArea * costPerSqmPerMonth;
@@ -212,7 +229,7 @@
                            </tr>`;
             resultsHTML += '</table>';
 
-            resultsHTML += `<p style="margin-top:5px;"><strong>Kaina už 1 m²${paymentPeriodHeader}: ${costPerSqmPerMonth.toFixed(4)} €</strong></p>`;
+            resultsHTML += `<p style="margin-top:5px;"><strong>Kaina už 1 m²${paymentPeriodHeader}: ${costPerSqmPerMonth.toFixed(4)} €</strong> (skaičiuojant pagal bendrą plotą ${overallTotalArea.toFixed(2)} m²)</p>`;
 
             if (numberOfMonths > 1) {
                 resultsHTML += `<h3 style="margin-top: 30px;">Bendra mokėjimų suma vienam butui per ${numberOfMonths} mėn.:</h3>`;
@@ -220,14 +237,15 @@
                 resultsHTML += `<tr><th>Buto tipas</th><th>Bendra suma per ${numberOfMonths} mėn. (€)</th></tr>`;
 
                 apartmentTypesData.forEach(type => {
-                    const totalCostForThisType = type.avgArea * costPerSqmPerMonth * numberOfMonths;
+                    // Bendra suma per laikotarpį = mėnesinė įmoka * mėnesių skaičius
+                    const totalCostForThisType = (type.avgArea * costPerSqmPerMonth) * numberOfMonths;
                     resultsHTML += `<tr>
                                       <td>${type.name}</td>
                                       <td>${totalCostForThisType.toFixed(2)} €</td>
                                    </tr>`;
                 });
 
-                const totalCostForSpecialApartment = specialApartment.area * costPerSqmPerMonth * numberOfMonths;
+                const totalCostForSpecialApartment = (specialApartment.area * costPerSqmPerMonth) * numberOfMonths;
                 resultsHTML += `<tr>
                                   <td>${specialApartment.name}</td>
                                   <td>${totalCostForSpecialApartment.toFixed(2)} €</td>
@@ -235,9 +253,9 @@
                 resultsHTML += '</table>';
             }
 
-
             resultsDiv.innerHTML = resultsHTML;
         }
     </script>
 </body>
+
 </html>
